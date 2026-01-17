@@ -1,0 +1,32 @@
+package com.appnotification.util
+
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import com.appnotification.worker.EmailSyncWorker
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+
+class WorkManagerScheduler @Inject constructor(
+    private val workManager: WorkManager
+) {
+    fun scheduleEmailSync() {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val syncWorkRequest = PeriodicWorkRequestBuilder<EmailSyncWorker>(
+            15, TimeUnit.MINUTES
+        )
+            .setConstraints(constraints)
+            .build()
+
+        workManager.enqueueUniquePeriodicWork(
+            "email_sync_work",
+            ExistingPeriodicWorkPolicy.KEEP,
+            syncWorkRequest
+        )
+    }
+}
